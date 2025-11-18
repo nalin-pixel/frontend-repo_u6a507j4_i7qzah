@@ -6,13 +6,14 @@ import Test from './Test'
 import CasinoDetail from './pages/CasinoDetail'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
+import Auth from './pages/Auth'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import './index.css'
 
 function PrivateRoute({ children }) {
   const { token } = useAuth()
   if (!token) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/auth" replace />
   }
   return children
 }
@@ -26,6 +27,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/test" element={<Test />} />
           <Route path="/casino/:slug" element={<CasinoDetail />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
         </Routes>
       </AuthProvider>

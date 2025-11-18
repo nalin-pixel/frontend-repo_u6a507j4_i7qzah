@@ -21,19 +21,30 @@ export function AuthProvider({ children }) {
   }, [user])
 
   const login = async (email, password) => {
-    const body = new URLSearchParams()
-    body.set('username', email)
-    body.set('password', password)
     const res = await fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
     })
     if (!res.ok) throw new Error('Invalid credentials')
     const data = await res.json()
     setToken(data.access_token)
-    // JWT contains role and sub; we can decode lightly or fetch profile later. Store email for now.
     setUser({ email })
+    return true
+  }
+
+  const register = async (email, password) => {
+    const res = await fetch(`${baseUrl}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    if (!res.ok) {
+      const msg = await res.text().catch(()=>null)
+      throw new Error(msg || 'Failed to register')
+    }
+    // After successful registration, auto-login
+    await login(email, password)
     return true
   }
 
@@ -42,7 +53,7 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const value = { token, user, login, logout }
+  const value = { token, user, login, register, logout, baseUrl }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

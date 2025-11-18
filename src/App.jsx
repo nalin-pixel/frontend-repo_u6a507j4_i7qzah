@@ -104,35 +104,9 @@ function App() {
             )}
             {!loading && !error && items.length === 0 && (
               <div className="col-span-2 text-center text-blue-200/80">
-                No casinos found. Sign in to add one or seed demo data.
+                No casinos found. Sign in to add one.
                 <div className="mt-3 flex items-center justify-center gap-2">
-                  <Link to="/login" className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 text-white px-4 py-2 text-sm border border-white/10">Sign in</Link>
-                  <button onClick={async () => {
-                    const headers = { 'Content-Type': 'application/json' }
-                    const secret = import.meta.env.VITE_ADMIN_SECRET
-                    if (secret) headers['x-admin-secret'] = secret
-                    await fetch(`${baseUrl}/api/seed/casino`, {
-                      method: 'POST',
-                      headers,
-                      body: JSON.stringify({
-                        name: 'Example Casino',
-                        slug: 'example-casino',
-                        affiliate_url: 'https://example.com',
-                        logo_url: 'https://placehold.co/96x96/png',
-                        bonus_text: '100% up to $500 + 100 FS',
-                        features: ['Fast payouts','Mobile app','2000+ games'],
-                        supported_countries: ['US','CA','GB'],
-                        base_score: 4.4,
-                        pros: ['Fast withdrawals','Great UX','Live chat support'],
-                        cons: ['Limited table games'],
-                        payment_methods: ['Visa','Mastercard','PayPal'],
-                        providers: ['NetEnt','Pragmatic Play','Playtech']
-                      })
-                    })
-                    fetchCasinos({ country: filters.country, q: filters.q, page, pageSize, sort })
-                  }} className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 text-white px-4 py-2 text-sm border border-white/10">
-                    Seed demo casino
-                  </button>
+                  <Link to="/auth" className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 text-white px-4 py-2 text-sm border border-white/10">Sign in / Sign up</Link>
                 </div>
               </div>
             )}
