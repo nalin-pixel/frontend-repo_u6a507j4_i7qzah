@@ -1,32 +1,41 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import Header from './components/Header'
 import CasinoCard from './components/CasinoCard'
 import Footer from './components/Footer'
+import SearchBar from './components/SearchBar'
 
 function App() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [filters, setFilters] = useState({ q: '', country: '' })
+  const baseUrl = useMemo(() => import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000', [])
+  const navigate = useNavigate()
+
+  const fetchCasinos = async (country) => {
+    try {
+      setLoading(true)
+      const url = new URL(`${baseUrl}/api/casinos`)
+      if (country) url.searchParams.set('country', country)
+      const res = await fetch(url)
+      const data = await res.json()
+      setItems(data.items || [])
+      setError('')
+    } catch (e) {
+      setError('Failed to load casinos')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchCasinos = async () => {
-      try {
-        const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
-        const res = await fetch(`${baseUrl}/api/casinos`)
-        const data = await res.json()
-        setItems(data.items || [])
-      } catch (e) {
-        setError('Failed to load casinos')
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchCasinos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onPlayNow = async (item) => {
     try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
       await fetch(`${baseUrl}/api/click`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,6 +46,11 @@ function App() {
       window.open(item.affiliate_url, '_blank', 'noopener,noreferrer')
     }
   }
+
+  const filtered = items.filter(i => {
+    if (!filters.q) return true
+    return i.name.toLowerCase().includes(filters.q.toLowerCase())
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-blue-100">
@@ -50,18 +64,24 @@ function App() {
             <p className="mt-4 text-blue-200/80 max-w-2xl mx-auto">Compare welcome bonuses, game selection, and payouts. Click Play Now to claim offers. We may earn a commission.</p>
           </div>
 
-          <div id="top-casinos" className="mt-10 grid md:grid-cols-2 gap-5">
+          <div className="mt-8">
+            <SearchBar onFilter={(f)=>{ setFilters(f); fetchCasinos(f.country) }} />
+          </div>
+
+          <div id="top-casinos" className="mt-6 grid md:grid-cols-2 gap-5">
             {loading && (
               <div className="col-span-2 text-center text-blue-200/80">Loading casinos...</div>
             )}
             {error && (
               <div className="col-span-2 text-center text-red-400">{error}</div>
             )}
-            {!loading && !error && items.length === 0 && (
-              <div className="col-span-2 text-center text-blue-200/80">No casinos seeded yet. Use the seed button below to add demo data.</div>
+            {!loading && !error && filtered.length === 0 && (
+              <div className="col-span-2 text-center text-blue-200/80">No casinos found. Try seeding demo data.</div>
             )}
-            {items.map((item) => (
-              <CasinoCard key={item.id} item={item} onClick={onPlayNow} />
+            {filtered.map((item) => (
+              <div key={item.id} className="cursor-pointer" onClick={()=>navigate(`/casino/${item.slug}`)}>
+                <CasinoCard item={item} onClick={onPlayNow} />
+              </div>
             ))}
           </div>
 
@@ -69,7 +89,6 @@ function App() {
             <a href="#how-it-works" className="text-sm text-blue-200/80 hover:text-white">How we rate</a>
             <span className="text-blue-200/40">•</span>
             <button onClick={async () => {
-              const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
               await fetch(`${baseUrl}/api/seed/casino`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -84,10 +103,7 @@ function App() {
                   base_score: 4.4
                 })
               })
-              // refresh
-              const res = await fetch(`${baseUrl}/api/casinos`)
-              const data = await res.json()
-              setItems(data.items || [])
+              fetchCasinos(filters.country)
             }} className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 text-white px-4 py-2 text-sm border border-white/10">
               Seed demo casino
             </button>
