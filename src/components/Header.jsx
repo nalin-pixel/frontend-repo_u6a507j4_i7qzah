@@ -1,12 +1,22 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Header({ onToggleMenu }) {
   const [open, setOpen] = useState(false)
+  const { token, logout } = useAuth()
+  const navigate = useNavigate()
+
   const toggle = () => {
     setOpen(!open)
     onToggleMenu && onToggleMenu(!open)
   }
+
+  const onLogout = () => {
+    logout()
+    navigate('/')
+  }
+
   return (
     <header className="relative z-20 border-b border-white/10 bg-slate-900/70 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
@@ -19,7 +29,14 @@ export default function Header({ onToggleMenu }) {
           <a className="hover:text-white" href="#bonuses">Bonuses</a>
           <a className="hover:text-white" href="#how-it-works">How It Works</a>
           <Link to="/test" className="hover:text-white">Status</Link>
-          <Link to="/admin" className="hover:text-white">Admin</Link>
+          {token ? (
+            <Link to="/admin" className="hover:text-white">Admin</Link>
+          ) : null}
+          {token ? (
+            <button onClick={onLogout} className="rounded-lg bg-white/10 hover:bg-white/15 text-white px-3 py-1.5 border border-white/10">Logout</button>
+          ) : (
+            <Link to="/login" className="rounded-lg bg-white/10 hover:bg-white/15 text-white px-3 py-1.5 border border-white/10">Sign in</Link>
+          )}
         </nav>
         <button onClick={toggle} className="md:hidden text-white/80 hover:text-white" aria-label="Toggle menu">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -31,7 +48,12 @@ export default function Header({ onToggleMenu }) {
           <a className="block hover:text-white" href="#bonuses">Bonuses</a>
           <a className="block hover:text-white" href="#how-it-works">How It Works</a>
           <Link to="/test" className="block hover:text-white">Status</Link>
-          <Link to="/admin" className="block hover:text-white">Admin</Link>
+          {token ? (<Link to="/admin" className="block hover:text-white">Admin</Link>) : null}
+          {token ? (
+            <button onClick={onLogout} className="w-full text-left rounded-lg bg-white/10 hover:bg-white/15 text-white px-3 py-1.5 border border-white/10">Logout</button>
+          ) : (
+            <Link to="/login" className="block rounded-lg bg-white/10 hover:bg-white/15 text-white px-3 py-1.5 border border-white/10">Sign in</Link>
+          )}
         </div>
       )}
     </header>
