@@ -7,7 +7,8 @@ export default function Admin() {
 
   const [casino, setCasino] = useState({
     name: '', slug: '', affiliate_url: '', logo_url: '', bonus_text: '',
-    features: '', supported_countries: '', base_score: 4.0
+    features: '', supported_countries: '', base_score: 4.0,
+    pros: '', cons: '', payment_methods: '', providers: ''
   })
   const [offer, setOffer] = useState({
     casino_slug: '', title: '', description: '', bonus_amount: '', wagering: '', code: ''
@@ -20,13 +21,20 @@ export default function Admin() {
         ...casino,
         features: casino.features ? casino.features.split(',').map(s=>s.trim()).filter(Boolean) : [],
         supported_countries: casino.supported_countries ? casino.supported_countries.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean) : [],
-        base_score: Number(casino.base_score)
+        base_score: Number(casino.base_score),
+        pros: casino.pros ? casino.pros.split(',').map(s=>s.trim()).filter(Boolean) : [],
+        cons: casino.cons ? casino.cons.split(',').map(s=>s.trim()).filter(Boolean) : [],
+        payment_methods: casino.payment_methods ? casino.payment_methods.split(',').map(s=>s.trim()).filter(Boolean) : [],
+        providers: casino.providers ? casino.providers.split(',').map(s=>s.trim()).filter(Boolean) : [],
       }
+      const headers = { 'Content-Type': 'application/json' }
+      const secret = import.meta.env.VITE_ADMIN_SECRET
+      if (secret) headers['x-admin-secret'] = secret
       const res = await fetch(`${baseUrl}/api/seed/casino`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        method: 'POST', headers, body: JSON.stringify(payload)
       })
       if (!res.ok) throw new Error('Failed to create casino')
-      setCasino({ name: '', slug: '', affiliate_url: '', logo_url: '', bonus_text: '', features: '', supported_countries: '', base_score: 4.0 })
+      setCasino({ name: '', slug: '', affiliate_url: '', logo_url: '', bonus_text: '', features: '', supported_countries: '', base_score: 4.0, pros: '', cons: '', payment_methods: '', providers: '' })
       alert('Casino created')
     } catch (err) {
       alert(err.message)
@@ -36,8 +44,11 @@ export default function Admin() {
   const submitOffer = async (e) => {
     e.preventDefault()
     try {
+      const headers = { 'Content-Type': 'application/json' }
+      const secret = import.meta.env.VITE_ADMIN_SECRET
+      if (secret) headers['x-admin-secret'] = secret
       const res = await fetch(`${baseUrl}/api/offers`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(offer)
+        method: 'POST', headers, body: JSON.stringify(offer)
       })
       if (!res.ok) throw new Error('Failed to create offer (make sure casino exists)')
       setOffer({ casino_slug: '', title: '', description: '', bonus_amount: '', wagering: '', code: '' })
@@ -52,7 +63,7 @@ export default function Admin() {
       <Header />
       <main className="mx-auto max-w-6xl px-4 py-10 space-y-8">
         <h1 className="text-2xl md:text-3xl font-bold text-white">Simple Admin</h1>
-        <p className="text-blue-200/80">Create casinos and offers. This lightweight panel has no authentication and is for demo use only.</p>
+        <p className="text-blue-200/80">Create casinos and offers. This lightweight panel has optional admin protection via an environment secret.</p>
 
         <div className="grid md:grid-cols-2 gap-6">
           <section className="rounded-2xl border border-blue-500/20 bg-slate-800/40 p-5">
@@ -86,9 +97,29 @@ export default function Admin() {
                 <label className="text-sm text-blue-200/80">Countries (comma separated)</label>
                 <input value={casino.supported_countries} onChange={e=>setCasino({...casino, supported_countries:e.target.value})} className="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2 text-white" />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-blue-200/80">Base Score (0-5)</label>
+                  <input type="number" min="0" max="5" step="0.1" value={casino.base_score} onChange={e=>setCasino({...casino, base_score:e.target.value})} className="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2 text-white" />
+                </div>
+                <div>
+                  <label className="text-sm text-blue-200/80">Providers (comma separated)</label>
+                  <input value={casino.providers} onChange={e=>setCasino({...casino, providers:e.target.value})} className="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2 text-white" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-blue-200/80">Payment Methods (comma separated)</label>
+                  <input value={casino.payment_methods} onChange={e=>setCasino({...casino, payment_methods:e.target.value})} className="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2 text-white" />
+                </div>
+                <div>
+                  <label className="text-sm text-emerald-200/80">Pros (comma separated)</label>
+                  <input value={casino.pros} onChange={e=>setCasino({...casino, pros:e.target.value})} className="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2 text-white" />
+                </div>
+              </div>
               <div>
-                <label className="text-sm text-blue-200/80">Base Score (0-5)</label>
-                <input type="number" min="0" max="5" step="0.1" value={casino.base_score} onChange={e=>setCasino({...casino, base_score:e.target.value})} className="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2 text-white" />
+                <label className="text-sm text-rose-200/80">Cons (comma separated)</label>
+                <input value={casino.cons} onChange={e=>setCasino({...casino, cons:e.target.value})} className="mt-1 w-full rounded-lg bg-slate-900/60 border border-white/10 px-3 py-2 text-white" />
               </div>
               <button type="submit" className="w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white px-4 py-2">Create Casino</button>
             </form>

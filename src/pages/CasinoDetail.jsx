@@ -60,6 +60,8 @@ export default function CasinoDetail() {
     }
   }
 
+  const ratings = data?.ratings
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-blue-100">
       <Header />
@@ -83,6 +85,16 @@ export default function CasinoDetail() {
                     <span key={i} className="text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-200/80">{f}</span>
                   ))}
                 </div>
+                {(data.casino.providers?.length || data.casino.payment_methods?.length) ? (
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    {data.casino.providers?.map((p, i) => (
+                      <span key={`prov-${i}`} className="px-2 py-1 rounded bg-fuchsia-500/10 text-fuchsia-200/90">{p}</span>
+                    ))}
+                    {data.casino.payment_methods?.map((m, i) => (
+                      <span key={`pm-${i}`} className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-200/90">{m}</span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               <div className="text-right">
                 <div className="text-yellow-300 font-semibold">⭐ {Number(data.casino.base_score || 4).toFixed(1)}</div>
@@ -93,7 +105,30 @@ export default function CasinoDetail() {
               </div>
             </div>
 
-            <div className="mt-10 grid md:grid-cols-3 gap-6">
+            {/* Ratings breakdown */}
+            {ratings?.total ? (
+              <div className="mt-6 rounded-2xl border border-blue-500/20 bg-slate-800/40 p-5">
+                <h3 className="text-white font-semibold">Ratings</h3>
+                <p className="text-sm text-blue-200/80">Average: <span className="text-yellow-300 font-medium">{ratings.average}</span> from {ratings.total} reviews</p>
+                <div className="mt-3 space-y-2">
+                  {[5,4,3,2,1].map(n => {
+                    const count = ratings.breakdown[String(n)] || 0
+                    const pct = ratings.total ? Math.round((count / ratings.total) * 100) : 0
+                    return (
+                      <div key={n} className="flex items-center gap-3">
+                        <span className="w-10 text-sm text-blue-200/80">{n}★</span>
+                        <div className="flex-1 h-2 bg-white/10 rounded">
+                          <div className="h-2 bg-yellow-400 rounded" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="w-10 text-right text-sm text-blue-200/80">{count}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-6 grid md:grid-cols-3 gap-6">
               <section className="md:col-span-2 space-y-6">
                 <div className="rounded-2xl border border-blue-500/20 bg-slate-800/40 p-5">
                   <h2 className="text-white font-semibold text-lg">Available Offers</h2>
@@ -170,6 +205,27 @@ export default function CasinoDetail() {
                       <span key={i} className="text-xs px-2 py-1 rounded bg-white/5 text-blue-100/80 border border-white/10">{c}</span>
                     ))}
                   </div>
+
+                  {(data.casino.pros?.length || data.casino.cons?.length) ? (
+                    <div className="mt-6 grid grid-cols-2 gap-4">
+                      {data.casino.pros?.length ? (
+                        <div>
+                          <h4 className="text-white font-semibold text-sm">Pros</h4>
+                          <ul className="mt-2 list-disc list-inside text-sm text-emerald-200/90 space-y-1">
+                            {data.casino.pros.map((p, i) => <li key={`pro-${i}`}>{p}</li>)}
+                          </ul>
+                        </div>
+                      ) : null}
+                      {data.casino.cons?.length ? (
+                        <div>
+                          <h4 className="text-white font-semibold text-sm">Cons</h4>
+                          <ul className="mt-2 list-disc list-inside text-sm text-rose-200/90 space-y-1">
+                            {data.casino.cons.map((c, i) => <li key={`con-${i}`}>{c}</li>)}
+                          </ul>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </aside>
             </div>
